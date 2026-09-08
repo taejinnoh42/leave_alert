@@ -58,7 +58,7 @@ def main():
 
     with sync_playwright() as p:
         # 화면을 보면서 테스트하려면 False, 나중에 백그라운드에서 24시간 돌리려면 True로 변경하세요.
-        browser = p.chromium.launch(headless=False) 
+        browser = p.chromium.launch(headless=True) 
         page = browser.new_page()
 
         print("로그인 페이지 접속 중...")
