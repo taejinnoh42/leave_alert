@@ -30,7 +30,7 @@ jobs:
     - name: 파이썬 스크립트 실행
       env: # 깃허브 금고(secrets)에서 키를 꺼내 환경 변수로 만듭니다.
         TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-      run: python code_v2.py
+      run: python code_v2.py test
 
     - name: 변경된 상태 파일(JSON) 깃허브에 덮어쓰기
       run: |
