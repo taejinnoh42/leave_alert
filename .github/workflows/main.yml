@@ -32,7 +32,7 @@ jobs:
         TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         LOGIN_NAME: ${{ secrets.LOGIN_NAME }}
         LOGIN_BIRTH_DATE: ${{ secrets.LOGIN_BIRTH_DATE }}
-      run: python code_v2.py test
+      run: python code_v2.py
 
     - name: 변경된 상태 파일(JSON) 깃허브에 덮어쓰기
       run: |
