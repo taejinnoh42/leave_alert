@@ -10,25 +10,22 @@ from playwright.sync_api import sync_playwright
 # ==========================================
 LOGIN_URL = "https://mgace-leave-manager-production.up.railway.app/login"
 
-# [수정됨] 하드코딩된 웹훅 URL 제거 및 환경 변수에서 불러오기로 변경
-# 기존 코드: TEAMS_WEBHOOK_URL = "https://defaultaa8a... (생략) ..."
-
 # GitHub Secrets에서 정보 불러오기
 TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 login_name = os.environ.get("LOGIN_NAME")
 login_birth = os.environ.get("LOGIN_BIRTH_DATE")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE_DIR, "leave_state.json")
 
 # ==========================================
-# [수정됨] Teams 워크플로 규격에 맞춘 전송 함수
+# 2. Teams 전송 함수
 # ==========================================
 def send_teams_alert(message):
-    if TEAMS_WEBHOOK_URL == "여기에_TEAMS_웹훅_URL_입력":
+    if not TEAMS_WEBHOOK_URL or TEAMS_WEBHOOK_URL == "여기에_TEAMS_웹훅_URL_입력":
         print("경고: Teams 웹훅 URL이 설정되지 않았습니다.")
         return
         
-    # 워크플로가 안정적으로 수신하는 Adaptive Card 포맷
     payload = {
         "type": "message",
         "attachments": [
@@ -59,29 +56,52 @@ def send_teams_alert(message):
         if hasattr(e, 'response') and getattr(e, 'response') is not None:
             print("상세 에러:", e.response.text)
 
+# ==========================================
+# 3. 메인 로직
+# ==========================================
 def main():
     is_test_mode = len(sys.argv) > 1 and sys.argv[1].lower() == "test"
+    
+    # --- [디버깅] 값 로드 확인 ---
+    print(f"아이디 로드: {'성공' if login_name else '실패'}")
+    if login_name:
+        print(f"아이디 길이: {len(login_name)}글자")
+    print(f"생년월일 로드: {'성공' if login_birth else '실패'}")
+    if login_birth:
+        print(f"생년월일 길이: {len(login_birth)}글자")
+    # -----------------------------
 
     with sync_playwright() as p:
-        # 화면을 보면서 테스트하려면 False, 나중에 백그라운드에서 24시간 돌리려면 True로 변경하세요.
         browser = p.chromium.launch(headless=True) 
         page = browser.new_page()
 
         print("로그인 페이지 접속 중...")
         page.goto(LOGIN_URL)
         
+        # 값이 없을 경우 대비(방어 로직)
+        if not login_name or not login_birth:
+            print("에러: 로그인 정보가 없습니다. Secrets 설정을 확인하세요.")
+            browser.close()
+            return
+
         page.fill("input[name='name']", login_name)
         page.fill("input[name='birth_date']", login_birth)
         
         page.click("button[type='submit']")
-        page.wait_for_load_state("networkidle")
+        
+        # [수정됨] 명시적으로 5초 대기 및 현재 URL 출력
+        page.wait_for_timeout(5000)
+        print(f"로그인 클릭 후 현재 URL: {page.url}")
 
         print("'연차승인' 메뉴로 이동 중...")
-        page.locator("text=연차승인").click() 
-        page.wait_for_load_state("networkidle") 
+        # [수정됨] 연차승인 버튼이 나타날 때까지 명시적 대기 후 클릭
+        page.locator("text=연차승인").first.wait_for(timeout=10000)
+        page.locator("text=연차승인").first.click() 
+        
+        page.wait_for_timeout(3000) 
 
         print("'승인됨' 목록으로 이동 중...")
-        page.locator("text=승인됨").click()
+        page.locator("text=승인됨").first.click()
         
         try:
             page.wait_for_selector("table tbody tr", timeout=10000)
