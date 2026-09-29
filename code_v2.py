@@ -9,12 +9,14 @@ from playwright.sync_api import sync_playwright
 # 1. 기본 설정
 # ==========================================
 LOGIN_URL = "https://mgace-leave-manager-production.up.railway.app/login"
-TEAMS_WEBHOOK_URL = "https://defaultaa8a2b8a92c048a082e87f593e87ad.ba.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/22/workflows/67be5de73751423aa4737e8487c5e38b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dXmctChrXxu-OIUKRjSne88gztRXpDEtkTIi8p4V0IE"
+
+# [수정됨] 하드코딩된 웹훅 URL 제거 및 환경 변수에서 불러오기로 변경
+# 기존 코드: TEAMS_WEBHOOK_URL = "https://defaultaa8a... (생략) ..."
 
 # GitHub Secrets에서 정보 불러오기
+TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL")
 login_name = os.environ.get("LOGIN_NAME")
 login_birth = os.environ.get("LOGIN_BIRTH_DATE")
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE_DIR, "leave_state.json")
 
