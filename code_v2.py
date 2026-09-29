@@ -11,6 +11,10 @@ from playwright.sync_api import sync_playwright
 LOGIN_URL = "https://mgace-leave-manager-production.up.railway.app/login"
 TEAMS_WEBHOOK_URL = "https://defaultaa8a2b8a92c048a082e87f593e87ad.ba.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/22/workflows/67be5de73751423aa4737e8487c5e38b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dXmctChrXxu-OIUKRjSne88gztRXpDEtkTIi8p4V0IE"
 
+# GitHub Secrets에서 정보 불러오기
+login_name = os.environ.get("LOGIN_NAME")
+login_birth = os.environ.get("LOGIN_BIRTH_DATE")
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE_DIR, "leave_state.json")
 
@@ -64,8 +68,8 @@ def main():
         print("로그인 페이지 접속 중...")
         page.goto(LOGIN_URL)
         
-        page.fill("input[name='name']", "임시관리자") 
-        page.fill("input[name='birth_date']", "19000101") 
+        page.fill("input[name='name']", login_name)
+        page.fill("input[name='birth_date']", login_birth)
         
         page.click("button[type='submit']")
         page.wait_for_load_state("networkidle")
