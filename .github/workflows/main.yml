@@ -2,8 +2,8 @@ name: Leave Auto Checker
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # 매 10분마다 실행
-  workflow_dispatch: # 수동 실행 버튼 추가 (테스트용)
+    - cron: '0 */2 * * *'
+  workflow_dispatch:  # 이 줄을 추가하면 GitHub에 수동 실행 버튼이 생깁니다.
 
 jobs:
   build:
